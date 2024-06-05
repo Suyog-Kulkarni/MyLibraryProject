@@ -1,0 +1,35 @@
+name: CI
+ 
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+ 
+jobs:
+  build:
+    runs-on: windows-latest
+ 
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v2
+      if: success() || failure()
+      with:
+        name: test-results
+        path: TestResults
+    - name: Upload Extent Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: TestReport
+        path: **\TestReport.html

@@ -1,48 +1,48 @@
 ﻿using AventStack.ExtentReports;
 using AventStack.ExtentReports.Reporter;
 
-namespace MyLibrary.Tests
+
+
+public class BaseTest
 {
-    public class BaseTest
+    protected ExtentReports extent;
+    protected ExtentTest test;
+
+    [OneTimeSetUp]
+    public void BeforeClass()
     {
-        protected ExtentReports extent;
-        protected ExtentTest test;
+        extent = new ExtentReports();
+        var htmlReporter = new ExtentHtmlReporter("TestReport.html");
+        extent.AttachReporter(htmlReporter);
+    }
 
-        [OneTimeSetUp]
-        public void BeforeClass()
+    [SetUp]
+    public void BeforeTest()
+    {
+        test = extent.CreateTest(TestContext.CurrentContext.Test.Name);
+    }
+
+    [TearDown]
+    public void AfterTest()
+    {
+        var status = TestContext.CurrentContext.Result.Outcome.Status;
+        var stackTrace = TestContext.CurrentContext.Result.StackTrace;
+
+        if (status == NUnit.Framework.Interfaces.TestStatus.Failed)
         {
-            extent = new ExtentReports();
-            var htmlReporter = new ExtentHtmlReporter("TestReport.html");
-            extent.AttachReporter(htmlReporter);
+            test.Fail(stackTrace);
         }
-
-        [SetUp]
-        public void BeforeTest()
+        else if (status == NUnit.Framework.Interfaces.TestStatus.Passed)
         {
-            test = extent.CreateTest(TestContext.CurrentContext.Test.Name);
-        }
-
-        [TearDown]
-        public void AfterTest()
-        {
-            var status = TestContext.CurrentContext.Result.Outcome.Status;
-            var stackTrace = TestContext.CurrentContext.Result.StackTrace;
-
-            if (status == NUnit.Framework.Interfaces.TestStatus.Failed)
-            {
-                test.Fail(stackTrace);
-            }
-            else if (status == NUnit.Framework.Interfaces.TestStatus.Passed)
-            {
-                test.Pass("Test passed");
-            }
-        }
-
-        [OneTimeTearDown]
-        public void AfterClass()
-        {
-            extent.Flush();
+            test.Pass("Test passed");
         }
     }
+
+    [OneTimeTearDown]
+    public void AfterClass()
+    {
+        extent.Flush();
+    }
 }
+
 
